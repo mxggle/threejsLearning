@@ -1,0 +1,84 @@
+<html>
+	<head>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+<script>
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera( 30, window.innerWidth/window.innerHeight, 0.1, 1000 );
+var mesh;
+var texture;
+
+var renderer = new THREE.WebGLRenderer({alpha: true});
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+// add icosahedron
+// var geometry = new THREE.SphereGeometry(12, 16, 16 );
+var geometry = new THREE.BoxGeometry( 12, 12, 12 );
+// create a loader to get an image from a URL
+var textureLoader = new THREE.TextureLoader();
+// we've gotta set this to use cross-origin images
+textureLoader.crossOrigin = true;
+// load in the image
+textureLoader.load('texture/woden.jpg', function(tt) {
+	texture = tt
+});
+	// this code makes the texture repeat
+setTimeout(function(){
+	texture.wrapS = texture.wrapT =   THREE.MirroredRepeatWrapping;
+	texture.wrapS = texture.wrapT =   THREE.RepeatWrapping;
+	texture.repeat.set( 1, 1 );
+	// set the texture as the map for the material
+	var material = new THREE.MeshLambertMaterial( {map: texture} );
+  mesh = new THREE.Mesh( geometry, material );
+  scene.add( mesh );
+	mesh.rotation.x = 10;
+	mesh.rotation.y = 4;
+  render();
+},1000)
+
+camera.position.z = 100;
+
+// so many lights
+var light = new THREE.DirectionalLight( 0xffffff, 1 );
+light.position.set( 0, 1, 0 );
+scene.add( light );
+
+var light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+light.position.set( 0, -1, 0 );
+scene.add( light );
+
+var light = new THREE.DirectionalLight( 0xffffff, 1 );
+light.position.set( 1, 0, 0 );
+scene.add( light );
+
+var light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+light.position.set( 0, 0, 1 );
+scene.add( light );
+
+var light = new THREE.DirectionalLight( 0xffffff, 1 );
+light.position.set( 0, 0, -1 );
+scene.add( light );
+
+var light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+light.position.set( -1, 0, 0 );
+scene.add( light );
+
+
+var render = function () {
+  // requestAnimationFrame( render );
+  // mesh.rotation.x += 0.01;
+  // mesh.rotation.y += 0.01;
+  renderer.render(scene, camera);
+};
+
+
+</script>
+	</body>
+</html>

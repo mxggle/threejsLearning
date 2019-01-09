@@ -1,0 +1,38 @@
+<html>
+	<head>
+		<title>creating text</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script>
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth,window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+      var camera = new THREE.PerspectiveCamera(100,window.innerWidth/window.innerHeight,1,1000);
+      camera.position.set(0,0,100);
+      camera.lookAt(0,0,0);
+      var scene = new THREE.Scene()
+
+      //create a blue LineBasicMater`ial
+      var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+      var loader = new THREE.FontLoader();
+      var geometry = null;
+      loader.load( 'fonts/font.json', function ( font ) {
+        geometry = new THREE.TextGeometry( 'Hello three.js!', {
+          font: font,
+          size: 20,
+          height: 5,
+          curveSegments: 12,
+        } );
+        var text = new THREE.Mesh( geometry, material );
+        scene.add( text );
+        renderer.render( scene, camera );
+      } );
+
+		</script>
+	</body>
+</html>
