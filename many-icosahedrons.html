@@ -1,0 +1,191 @@
+<html>
+	<head>
+		<title>My first three.js app</title>
+		<style>
+			body { 
+				margin: 0; 
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				background: #081d22;
+			}
+
+			canvas { 
+				width: 100%; 
+				height: 100%;
+			}
+
+			.label {
+				position: absolute;
+				width: 100%;
+				text-align: center;
+				top: 0;
+				color: #fff;
+			}
+		</style>
+	</head>
+	<body>
+    <script src="js/three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.0.2/plugins/CSSPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.0.2/easing/EasePack.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.0.2/TweenLite.min.js"></script>
+		<script>
+var colors = [0x05A8AA, 0xB8D5B8, 0xD7B49E, 0xDC602E, 0xBC412B, 0xF19C79, 0xCBDFBD, 0xF6F4D2, 0xD4E09B, 0xFFA8A9, 0xF786AA, 0xA14A76, 0xBC412B, 0x63A375, 0xD57A66, 0x731A33, 0xCBD2DC, 0xDBD48E, 0x5E5E5E];
+var scene, camera, renderer,angle = 0;
+
+
+function initScene() {
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera( 100, window.innerWidth/window.innerHeight, 0.1, 1000 );
+  renderer = new THREE.WebGLRenderer({alpha: true});
+	renderer.setSize( window.innerWidth, window.innerHeight );
+  document.body.appendChild( renderer.domElement );
+  camera.position.z = 100;
+};
+
+function initLighting() {
+  // so many lights
+  var light = new THREE.DirectionalLight( 0xffffff, 1 );
+  light.position.set( 0, 1, 0 );
+  scene.add( light );
+
+  var light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+  light.position.set( 0, -1, 0 );
+  scene.add( light );
+
+  var light = new THREE.DirectionalLight( 0xffffff, 1 );
+  light.position.set( 1, 0, 0 );
+  scene.add( light );
+
+  var light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+  light.position.set( 0, 0, 1 );
+  scene.add( light );
+
+  var light = new THREE.DirectionalLight( 0xffffff, 1 );
+  light.position.set( 0, 0, -1 );
+  scene.add( light );
+
+  var light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+  light.position.set( -1, 0, 0 );
+  scene.add( light );
+}
+function createRocks() {
+  rocks = [];
+  for (var i = 0; i < 100; i++) {
+    var r = new Rock();
+    rocks.push(r);
+  }
+}
+function Rock() {
+  // init
+  var size = 10+Math.random()*10;
+  var geometry = new THREE.IcosahedronGeometry(size, 0);
+  var verticePositions = [];
+  for ( var i = 0; i < geometry.faces.length; i ++ ) {
+      var face = geometry.faces[ i ];
+      face.color.setHex(colors[i]);
+  }
+  var material = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors });
+
+  var mesh = new THREE.Mesh( geometry, material );
+
+  // rotate cube
+  var field = 300;
+  scene.add( mesh );
+  mesh.position.x = -field+Math.random()*field*2;
+  mesh.position.y = -field+Math.random()*field*2;
+  mesh.position.z = -field+Math.random()*field*2;
+  
+  this.mesh = mesh;
+  function getOriginalVerticePositions() {
+    // go through each vertice geometry and store their position in an array
+    for (var i = 0, l = geometry.vertices.length; i<l; i++) {
+      verticePositions.push({x: geometry.vertices[i].x, y: geometry.vertices[i].y});
+    } 
+  }
+  function getNewVertices() {
+    /* this function returns an array of vertice positions which are randomised
+    from the original vertice position */
+    var newVertices = [];
+    for (var i = 0, l = geometry.vertices.length; i<l; i++) {
+      newVertices[i] = {
+        x: verticePositions[i].x -5 + Math.random()*10,
+        y: verticePositions[i].y -5 + Math.random()*10
+      }
+    }
+    return newVertices;
+  }
+  function tweenVertice(i, newVerticePositions) {
+    var target = {
+      x: newVerticePositions[i].x, 
+      y: newVerticePositions[i].y, 
+      ease: Back.easeInOut,
+      onComplete: function() {
+        if (i === 0) tweenIcosohedron();
+      },
+      onUpdate:function () {
+        geometry.verticesNeedUpdate = true;
+      }
+    }
+    // set the tween
+    TweenLite.to(geometry.vertices[i], 1, target);
+  }
+  function tweenIcosohedron() {
+    // create a random rotation aount
+    var rotation = {x: Math.random()*3, y: Math.random()*3, z: Math.random()*3};
+    // tween the mesh's rotation property to the new position
+    var target =  {
+      x: rotation.x, 
+      y: rotation.y, 
+      z: rotation.z, 
+      delay:i * 1,
+      ease: Back.easeInOut, 
+      onComplete: tweenIcosohedron
+    }
+    TweenLite.to(mesh.rotation, 1,target);
+    var newVerticePositions = getNewVertices();
+    for (var i = 0; i < geometry.vertices.length; i++) {
+      tweenVertice(i, newVerticePositions);
+    }
+  }
+  getOriginalVerticePositions();
+  getNewVertices();
+  tweenIcosohedron();
+  
+}
+function updateCamPosition() {
+  // rotate our camera's position on the z/y axis
+  angle += 0.005;
+  var z = 100 * Math.cos(angle);
+  var y = 100 * Math.sin(angle);
+  camera.position.z = z;
+  camera.position.y = y;
+
+  /* rotate the camera so the angle it faces animates -
+   there's no exact science to this - I just picked a
+   random percentage of the z position */
+
+  camera.rotation.x = z*0.02;
+}
+function render() {
+  requestAnimationFrame( render );
+  renderer.render(scene, camera);
+  updateCamPosition()
+};
+
+function resize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+initScene();
+initLighting();
+resize();
+createRocks()
+render();
+window.addEventListener("resize", resize);
+
+		</script>
+	</body>
+</html>

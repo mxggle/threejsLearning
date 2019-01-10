@@ -117,6 +117,17 @@ function tweenVertice(i, newVerticePositions) {
     if (i === 0) tweenIcosahedron();
   }});
 }
+function tweenIcosohedron() {
+  // create a random rotation aount
+  var rotation = {x: Math.random()*3, y: Math.random()*3, z: Math.random()*3};
+  // tween the mesh's rotation property to the new position
+  TweenLite.to(mesh.rotation, 1, {x: rotation.x, y: rotation.y, z: rotation.z, 
+    ease: Back.easeInOut, onComplete: tweenIcosohedron});
+  var newVerticePositions = getNewVertices();
+  for (var i = 0; i < geometry.vertices.length; i++) {
+    tweenVertice(i, newVerticePositions);
+  }
+}
 
 function render() {
   requestAnimationFrame( render );
@@ -138,7 +149,7 @@ getOriginalVerticePositions();
 render();
 
 window.addEventListener("resize", resize);
-tweenIcosahedron();
+tweenIcosohedron();
 
 		</script>
 	</body>
